@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from logging import makeLogRecord
 import flask
 from flask import Flask, request
 from flask_sockets import Sockets
@@ -59,29 +60,88 @@ class World:
     def world(self):
         return self.space
 
-myWorld = World()        
+myWorld = World()  
+client_sockets = list()      
 
 def set_listener( entity, data ):
     ''' do something with the update ! '''
+    # update all client sockets
+
+    packet = {entity: data}
+
+    for client in client_sockets:
+        client.send(json.dumps(packet))
 
 myWorld.add_set_listener( set_listener )
         
 @app.route('/')
 def hello():
     '''Return something coherent here.. perhaps redirect to /static/index.html '''
-    return None
+
+    return flask.redirect("/static/index.html")
+
+    # return None
 
 def read_ws(ws,client):
     '''A greenlet function that reads from the websocket and updates the world'''
     # XXX: TODO IMPLEMENT ME
     return None
 
+    # try:
+    #     while True:
+    #         msg = ws.receive()
+    #         if msg != None:
+    #             packet = json.loads(msg)
+    #             # update the world
+    #             for entity in packet:
+    #                 data = packet[entity]
+    #                 myWorld.set(entity, data)
+    # except:
+    #     pass
+
 @sockets.route('/subscribe')
 def subscribe_socket(ws):
     '''Fufill the websocket URL of /subscribe, every update notify the
        websocket and read updates from the websocket '''
     # XXX: TODO IMPLEMENT ME
-    return None
+
+    # save the ws to update later
+    if ws not in client_sockets:
+        client_sockets.append(ws)
+
+    # gevent.spawn(read_ws, ws, None)  
+
+
+    # while True:
+    # ws.send(ws.receive())
+
+    # message = json.loads(ws.received())
+    # response = json.dumps(message)
+
+    # ws.send(response)
+
+    while True:
+        try:
+            w = ws.receive()
+
+            if w != None:
+                m = json.loads(w)
+
+                for entity in m:
+                    data = m[entity]
+                    myWorld.set(entity, data)
+
+                # ws.send(json.dumps(m))
+        except:
+            pass
+
+
+
+        # data_string = json.dumps(myWorld.world())
+
+        # ws.send(data_string)
+
+    # return None
 
 
 # I give this to you, this is how you get the raw body/data portion of a post in flask

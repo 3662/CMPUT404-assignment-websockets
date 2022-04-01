@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-# Copyright (c) 2013-2014 Abram Hindle
+# Copyright (c) 2013-2022 Abram Hindle, Felipe Rodriguez Atuesta
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -65,16 +65,6 @@ clients = list()
 
 def set_listener( entity, data ):
     ''' do something with the update ! '''
-    # update all client sockets
-
-    # packet = {entity: data}
-
-    # try:
-    #     for client in client_sockets:
-    #         # client.send(json.dumps(myWorld.world()))
-    #         client.send(json.dumps(packet))
-    # except:
-    #     pass
 
 myWorld.add_set_listener( set_listener )
         
@@ -83,8 +73,6 @@ def hello():
     '''Return something coherent here.. perhaps redirect to /static/index.html '''
 
     return flask.redirect("/static/index.html")
-
-    # return None
 
 class Client:
     def __init__(self):
@@ -114,32 +102,15 @@ def read_ws(ws,client):
             if (msg is not None):
                 packet = json.loads(msg)
 
-                # for entity in packet:
-                #     data = packet[entity]
-                #     myWorld.set(entity, data)
-
-                # send_all_json( myWorld.world() )
+                for entity in packet:
+                    data = packet[entity]
+                    myWorld.set(entity, data)
 
                 send_all_json( packet )
             else:
                 break
     except:
         '''Done'''
-
-
-    return None
-
-    # try:
-    #     while True:
-    #         msg = ws.receive()
-    #         if msg != None:
-    #             packet = json.loads(msg)
-    #             # update the world
-    #             for entity in packet:
-    #                 data = packet[entity]
-    #                 myWorld.set(entity, data)
-    # except:
-    #     pass
 
 @sockets.route('/subscribe')
 def subscribe_socket(ws):
@@ -149,63 +120,16 @@ def subscribe_socket(ws):
 
     client = Client()
     clients.append(client)
-    g = gevent.spawn( read_ws, ws, client )    
-    # print("Subscribing")
+    g = gevent.spawn( read_ws, ws, client )
     try:
         while True:
-            # block here
             msg = client.get()
-            # print("Got a message!")
             ws.send(msg)
-    except Exception as e:# WebSocketError as e:
+    except Exception as e:
         print("WS Error %s" % e)
     finally:
         clients.remove(client)
         gevent.kill(g)
-
-
-    # save the ws to update later
-    # if ws not in client_sockets:
-    #     client_sockets.append(ws)
-
-    # # gevent.spawn(read_ws, ws, None)  
-
-
-    # # while True:
-    # # ws.send(ws.receive())
-
-    # # message = json.loads(ws.received())
-    # # response = json.dumps(message)
-
-    # # ws.send(response)
-
-    # while True:
-    #     try:
-    #         w = ws.receive()
-
-    #         if w != None:
-    #             m = json.loads(w)
-
-    #             for entity in m:
-    #                 data = m[entity]
-    #                 myWorld.set(entity, data)
-
-    #             # ws.send(json.dumps(m))
-    #     except Exception as e:
-    #         # print("WS Error %s" % e)
-    #         pass
-    #     finally:
-    #         ws.close()
-    #         client_sockets.remove(ws)
-
-
-
-    #     # data_string = json.dumps(myWorld.world())
-
-    #     # ws.send(data_string)
-
-    # # return None
-
 
 # I give this to you, this is how you get the raw body/data portion of a post in flask
 # this should come with flask but whatever, it's not my project.
@@ -222,24 +146,30 @@ def flask_post_json():
 @app.route("/entity/<entity>", methods=['POST','PUT'])
 def update(entity):
     '''update the entities via this interface'''
-    return None
+    myWorld.set(entity, flask_post_json())
+
+    return (myWorld.get(entity), 200, {'ContentType': 'application/json'}) 
 
 @app.route("/world", methods=['POST','GET'])    
 def world():
     '''you should probably return the world here'''
-    return None
+    
+    return (myWorld.world(), 200, {'ContentType': 'application/json'})
 
 @app.route("/entity/<entity>")    
 def get_entity(entity):
     '''This is the GET version of the entity interface, return a representation of the entity'''
-    return None
+    
+    return (myWorld.get(entity), 200, {'ContentType': 'application/json'})
 
 
 @app.route("/clear", methods=['POST','GET'])
 def clear():
     '''Clear the world out!'''
-    return None
+    
+    myWorld.clear()
 
+    return ({}, 200, {})
 
 
 if __name__ == "__main__":

@@ -7,6 +7,13 @@ See requirements.org (plain-text) for a description of the project.
 
 Make a shared state Websockets drawing program
 
+External Source Code
+==============================
+Code from repository "WebSocketsExamples" (from class) was used as reference 
+to write "sockets.py".
+
+Source: https://github.com/uofa-cmput404/cmput404-slides/tree/d187f73a2fe5008eef0fbcb823820a31b27d8cca/examples/WebSocketsExamples
+
 Prereqs
 =======
 Create a virtual environment and install the required dependencies.
@@ -26,7 +33,7 @@ freetests.py is LICENSE'D under a BSD-like license:
 
 From ws4py
 
-Copyright (c) 2011-2014, Sylvain Hellegouarch, Abram Hindle
+Copyright (c) 2011-2022, Sylvain Hellegouarch, Abram Hindle, Felipe Rodriguez Atuesta
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -59,3 +66,4 @@ Contributors
 * Mark Galloway
 * Abram Hindle
 * Cole Mackenzie
+* Felipe Rodriguez Atuesta
